@@ -23,9 +23,6 @@ class DBClient {
   async nbUsers() {
     const usersCount = this.db.collection('users');
     const docsInUsers = await usersCount.countDocuments();
-    console.log("******")
-    console.log(docsInUsers);
-    console.log("******")
     return docsInUsers;
   }
 
