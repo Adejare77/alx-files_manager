@@ -3,7 +3,7 @@ const AppController = require('../controllers/AppController');
 const UsersController = require('../controllers/UsersController');
 
 const app = express();
-app.use(express.json());  // parse JSON bodies
+app.use(express.json()); // parse JSON bodies
 
 app.get('/status', (req, res) => {
   res.send(AppController.getStatus(req, res));
