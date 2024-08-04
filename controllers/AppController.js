@@ -15,8 +15,10 @@ async function connect() {
 
 class AppController {
   static async getStatus(req, res) {
+    // const redisIsAlive = await redisClient.isAlive();
+    // const dbIsAlive = await dbClient.isAlive();
     if (redisClient.isAlive() && dbClient.isAlive()) {
-      return res.status(200).send(JSON.stringify({ redis: true, db: true }));
+      return res.status(200).json({ redis: true, db: true });
     }
     let retry = 0;
     const repeatFunc = async () => {

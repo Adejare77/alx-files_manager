@@ -31,16 +31,6 @@ class DBClient {
     const docsInFiles = await this.db.collection('files').countDocuments();
     return docsInFiles;
   }
-
-  async getUserByEmail(email) {
-    const user = await this.db.collection('users').findOne({ email });
-    return user;
-  }
-
-  async addUser(user) {
-    await this.db.collection('users').insertOne(user);
-    // return await
-  }
 }
 
 const dbClient = new DBClient();
