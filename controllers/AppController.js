@@ -14,10 +14,9 @@ async function connect() {
 }
 
 class AppController {
-  static getStatus(req, res) {
+  static async getStatus(req, res) {
     if (redisClient.isAlive() && dbClient.isAlive()) {
-      res.status = 200;
-      return JSON.stringify({ redis: true, db: true });
+      return res.status(200).send(JSON.stringify({ redis: true, db: true }));
     }
     let retry = 0;
     const repeatFunc = async () => {
@@ -25,21 +24,25 @@ class AppController {
       const result = await connect();
       if (result) {
         res.status = 200;
-        return JSON.stringify({ redis: true, db: true });
+        return res.status(200).send(JSON.stringify({ redis: true, db: true }));
       } if (retry <= 10) {
         return repeatFunc(); // Await the recursive call
       }
-      res.status = 500;
-      return JSON.stringify({ redis: redisClient.isAlive(), db: dbClient.isAlive() });
+      return res.status(500).json({
+        redis: redisClient.isAlive(),
+        db: dbClient.isAlive(),
+      });
     };
     return repeatFunc();
   }
 
-  static getStats() {
-    return {
-      users: dbClient.nbUsers(),
-      files: dbClient.nbFiles(),
-    };
+  static async getStats(req, res) {
+    const usersCount = await dbClient.nbUsers();
+    const filesCount = await dbClient.nbFiles();
+    return res.status(200).json({
+      users: usersCount,
+      files: filesCount,
+    });
   }
 }
 

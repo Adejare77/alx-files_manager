@@ -3,6 +3,12 @@ const { ObjectId } = require('mongodb');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
 
+function hashPassword(password) {
+  const sha1 = crypto.createHash('sha1').update(password);
+
+  return sha1.digest('hex');
+}
+
 class UsersController {
   static async postNew(req, res) {
     const { email, password } = req.body;
@@ -26,7 +32,7 @@ class UsersController {
         return;
       }
 
-      const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
+      const hashedPassword = hashPassword(password);
       const newUser = { email, password: hashedPassword };
 
       const result = await usersCollection.insertOne(newUser);
