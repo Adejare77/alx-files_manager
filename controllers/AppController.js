@@ -5,13 +5,13 @@ class AppController {
   static async getStatus(req, res) {
     const redisIsAlive = await redisClient.isAlive();
     const dbIsAlive = await dbClient.isAlive();
-    return res.status(200).json({ redis: redisIsAlive, db: dbIsAlive });
+    res.status(200).json({ redis: redisIsAlive, db: dbIsAlive });
   }
 
   static async getStats(req, res) {
     const usersCount = await dbClient.nbUsers();
     const filesCount = await dbClient.nbFiles();
-    return res.status(200).json({
+    res.status(200).json({
       users: usersCount,
       files: filesCount,
     });
