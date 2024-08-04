@@ -6,12 +6,12 @@ const UsersController = require('../controllers/UsersController');
 const app = express();
 app.use(express.json()); // parse JSON bodies
 
-app.get('/status', async (req, res) => {
-  await AppController.getStatus(req, res);
+app.get('/status', (req, res) => {
+  AppController.getStatus(req, res);
 });
 
-app.get('/stats', async (req, res) => {
-  await AppController.getStats(req, res);
+app.get('/stats', (req, res) => {
+  AppController.getStats(req, res);
 });
 
 app.post('/users', (req, res) => {
