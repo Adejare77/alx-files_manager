@@ -1,33 +1,24 @@
-const express = require('express');
+import { Router } from 'express';
+
+// const FilesController = require('../controllers/FilesController');
 const AppController = require('../controllers/AppController');
 const AuthController = require('../controllers/AuthController');
 const UsersController = require('../controllers/UsersController');
 
-const app = express();
-app.use(express.json()); // parse JSON bodies
+const router = Router();
 
-app.get('/status', (req, res) => {
-  AppController.getStatus(req, res);
-});
+router.get('/status', AppController.getStatus);
 
-app.get('/stats', (req, res) => {
-  AppController.getStats(req, res);
-});
+router.get('/stats', AppController.getStats);
 
-app.post('/users', (req, res) => {
-  UsersController.postNew(req, res);
-});
+router.post('/users', UsersController.postNew);
 
-app.get('/connect', (req, res) => {
-  AuthController.getConnect(req, res);
-});
+router.get('/connect', AuthController.getConnect);
 
-app.get('/disconnect', (req, res) => {
-  AuthController.getDisconnect(req, res);
-});
+router.get('/disconnect', AuthController.getDisconnect);
 
-app.get('/users/me', (req, res) => {
-  UsersController.getMe(req, res);
-});
+router.get('/users/me', UsersController.getMe);
 
-module.exports = app;
+// router.post('/files', FilesController.postUpload);
+
+module.exports = router;
