@@ -29,8 +29,8 @@ class FilesController {
     const {
       name,
       type,
-      parentId = 0,
       isPublic = false,
+      parentId = 0,
       data,
     } = req.body;
 
@@ -62,8 +62,8 @@ class FilesController {
       userId: user._id, // Associate file to the owner who created it
       name,
       type,
-      parentId,
       isPublic,
+      parentId,
     });
 
     if (type === 'folder') {
@@ -71,10 +71,10 @@ class FilesController {
       try {
         const result = await files.insertOne(newFile);
         // Destructure to exclude '_id' which was automatically inserted by insertOne
-        const { _id, ...newFileWithoutId } = newFile;
+        const { _id, ...newFileWithoutObjectId } = newFile;
         return res.status(201).json({
           id: result.insertedId, // the file _id given in the file collection
-          ...newFileWithoutId, // using spread operator
+          ...newFileWithoutObjectId, // using spread operator
         });
       } catch (err) {
         return res.status(500).json({ error: 'Error inserting file' });
@@ -104,6 +104,92 @@ class FilesController {
       id: file.insertedId, // The id of the file just inserted
       ...newFileWithoutLocalPath,
     });
+  }
+
+  static async getShow(req, res) {
+    const token = req.header('x-token');
+    const user = await FilesController.tokenForUser(token);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(req.params.id) });
+    if (!file || file.userId.toString() !== user._id.toString()) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    // file.id = file._id; // Inorder to use 'id' instead of '_id'
+    // delete file._id; // Delete '_id'
+    // delete file.localPath; // We don't want the localPath displayed
+
+    // Using destructuring to rename _id, remove localPath and keep others
+    const { _id: id, localPath, ...fields } = file;
+    const modifiedFile = { id, ...fields };
+    return res.status(200).send(modifiedFile);
+  }
+
+  static async getIndex(req, res) {
+    const token = req.header('x-token');
+    const user = await FilesController.tokenForUser(token);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const filesCollection = dbClient.db.collection('files');
+    const { parentId, page } = req.query;
+
+    const pageNumber = page ? parseInt(page, 10) : 0;
+    const startIndex = pageNumber * 20;
+    const matchCriterial = { userId: user._id };
+    if (parentId) {
+      matchCriterial.parentId = parentId;
+    }
+    const aggregatedFiles = await filesCollection.aggregate([
+      { $match: matchCriterial },
+      { $skip: startIndex },
+      { $limit: 20 },
+      { $addFields: { id: '$_id' } },
+      { $project: { _id: 0, localPath: 0 } },
+    ]).toArray();
+
+    return res.status(200).send(aggregatedFiles);
+  }
+
+  static async putPublish(req, res) {
+    const token = req.header('X-Token'); // express is case insensitive
+    const user = await FilesController.tokenForUser(token);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(req.params.id) });
+    if (!file || file.userId.toString() !== user._id.toString()) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    await dbClient.db.collection('files').updateOne(
+      { _id: ObjectId(req.params.id) }, // filter
+      { $set: { isPublic: true } }, // updated field
+    );
+    // Using destructuring to rename _id, remove localPath and keep others
+    const { _id: id, localPath, ...fields } = file;
+    // update the isPublic field using destructuring
+    const modifiedFile = { id, ...fields, isPublic: true };
+    return res.status(200).send(modifiedFile);
+  }
+
+  static async putUnpublish(req, res) {
+    const token = req.header('x-token');
+    const user = await FilesController.tokenForUser(token);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(req.params.id) });
+    if (!file || file.userId.toString() !== user._id.toString()) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    await dbClient.db.collection('files').updateOne(
+      { _id: ObjectId(req.params.id) }, // filter
+      { $set: { isPublic: false } }, // updated field
+    );
+    const { _id: id, localPath, ...fields } = file;
+    const modifiedFile = { id, ...fields, isPublic: false };
+    return res.status(200).send(modifiedFile);
   }
 }
 

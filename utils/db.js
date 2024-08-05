@@ -18,7 +18,8 @@ class DBClient {
 
   isAlive() {
     // Check if MongoDB is running and connected
-    return this.client.topology.isConnected();
+    // return this.client.topology.isConnected();
+    return this.client.isConnected();
   }
 
   async nbUsers() {
