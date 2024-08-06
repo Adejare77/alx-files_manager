@@ -2,7 +2,8 @@ const express = require('express');
 
 const FilesController = require('../controllers/FilesController');
 const AppController = require('../controllers/AppController');
-// const AuthController = require('../controllers/AuthController');
+// eslint-disable-next-line no-empty
+const AuthController = require('../controllers/AuthController');
 const UsersController = require('../controllers/UsersController');
 
 const router = express.Router();
