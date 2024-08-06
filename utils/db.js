@@ -1,5 +1,4 @@
 const { MongoClient } = require('mongodb');
-// const { get } = require('request');
 
 class DBClient {
   constructor() {
