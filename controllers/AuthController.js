@@ -11,7 +11,8 @@ class AuthController {
     }
 
     const base64Credentials = authHeader.split(' ')[1];
-    const credentials = Buffer.from(base64Credentials, 'base64').split(':');
+    const decodedCredentials = Buffer.from(base64Credentials, 'base64').toString('utf8');
+    const credentials = decodedCredentials.split(':');
     const [email, password] = credentials;
 
     const user = await dbClient.db.collection('users').findOne({ email, password: sha1(password) });
