@@ -1,6 +1,5 @@
 const uuid = require('uuid');
 const sha1 = require('sha1');
-// const base64 = require('base-64');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
 
@@ -12,7 +11,6 @@ class AuthController {
     }
 
     const base64Credentials = authHeader.split(' ')[1];
-    // const credentials = base64.decode(base64Credentials).split(':');
     const credentials = Buffer.from(base64Credentials, 'base64').split(':');
     const [email, password] = credentials;
 

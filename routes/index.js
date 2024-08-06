@@ -2,7 +2,6 @@ const express = require('express');
 
 const FilesController = require('../controllers/FilesController');
 const AppController = require('../controllers/AppController');
-// eslint-disable-next-line no-empty
 const AuthController = require('../controllers/AuthController');
 const UsersController = require('../controllers/UsersController');
 
