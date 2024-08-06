@@ -24,6 +24,9 @@ class FilesController {
 
   static async postUpload(req, res) {
     const token = req.header('x-token'); // express format;
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     const user = await FilesController.tokenForUser(token);
 
     if (!user) {
