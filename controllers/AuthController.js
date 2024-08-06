@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+const uuid = require('uuid');
 const sha1 = require('sha1');
 const base64 = require('base-64');
 const redisClient = require('../utils/redis');
@@ -20,7 +20,7 @@ class AuthController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const token = uuidv4();
+    const token = uuid.v4();
     const tokenKey = `auth_${token}`;
     await redisClient.set(tokenKey, user._id.toString(), 86400); // Store for 24 hours
 
