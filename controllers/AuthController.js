@@ -1,11 +1,12 @@
 const uuid = require('uuid');
 const sha1 = require('sha1');
+const { ObjectId } = require('mongodb');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
 
 class AuthController {
   static async getConnect(req, res) {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.header('authorization');
     if (!authHeader || !authHeader.startsWith('Basic ')) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -28,7 +29,7 @@ class AuthController {
   }
 
   static async getDisconnect(req, res) {
-    const token = req.headers['x-token'];
+    const token = req.header('x-token');
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -44,7 +45,7 @@ class AuthController {
   }
 
   static async getMe(req, res) {
-    const token = req.headers['x-token'];
+    const token = req.header('x-token');
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -53,7 +54,7 @@ class AuthController {
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const user = await dbClient.db.collection('users').findOne({ _id: userId });
+    const user = await dbClient.db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
