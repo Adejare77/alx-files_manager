@@ -1,7 +1,10 @@
 const crypto = require('crypto');
 const { ObjectId } = require('mongodb');
+const Queue = require('bull');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
+
+const userQueue = new Queue('userQueue', 'redis://127.0.0.1:6379');
 
 function hashPassword(password) {
   const sha1 = crypto.createHash('sha1').update(password);
@@ -37,6 +40,11 @@ class UsersController {
 
       const result = await usersCollection.insertOne(newUser);
       const userId = result.insertedId;
+
+      // Add new userId to the Queue
+      userQueue.add({
+        userId,
+      });
 
       res.status(201).json({ id: userId, email });
     } catch (error) {

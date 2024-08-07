@@ -2,3 +2,5 @@ node_modules
 .eslintrc.js
 package*
 babel.config.js
+sample.js
+*backup*

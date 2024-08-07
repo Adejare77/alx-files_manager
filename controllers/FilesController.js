@@ -56,7 +56,7 @@ class FilesController {
     const files = dbClient.db.collection('files');
 
     if (parentId) {
-      const file = await files.findOne({ _id: new ObjectId(parentId), userId: ObjectId(user._id) });
+      const file = await files.findOne({ _id: new ObjectId(parentId) });
       if (!file) {
         return res.status(404).json({ error: 'Parent not found' });
       }
@@ -217,16 +217,27 @@ class FilesController {
       return res.status(404).json({ error: 'Not found' });
     }
     if (file.type === 'folder') {
-      return res.status(400).json({ error: 'A folder doesn\'t have content' });
+      return res.status(400).json({ error: "A folder doesn't have content" });
     }
     if (!fs.existsSync(file.localPath)) {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    const mimeType = mime.lookup(file.name);
-    const fileContent = fs.readFileSync(file.localPath, 'utf8');
-    res.set('Content-Type', mimeType);
-    return res.status(200).send(fileContent);
+    try {
+      const { size } = req.params;
+      let fileName = file.localPath;
+
+      if (size) {
+        fileName = `${fileName}_${size}`;
+      }
+
+      const mimeType = mime.contentType(file.name);
+      const fileContent = fs.readFileSync(fileName, 'utf8');
+      res.set('Content-Type', mimeType);
+      return res.status(200).send(fileContent);
+    } catch (err) {
+      return res.status(404).json({ error: 'Not found' });
+    }
   }
 }
 
