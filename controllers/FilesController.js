@@ -16,10 +16,10 @@ class FilesController {
       const tokenKey = `auth_${token}`;
       const userId = await redisClient.get(tokenKey);
       user = await dbClient.db.collection('users').findOne({ _id: new ObjectId(userId) });
+      return user;
     } catch (err) {
-      // eslint-disable-next-line no-empty
+      return null;
     }
-    return user;
   }
 
   static async postUpload(req, res) {
@@ -56,7 +56,7 @@ class FilesController {
     const files = dbClient.db.collection('files');
 
     if (parentId) {
-      const file = await files.findOne({ _id: new ObjectId(parentId) });
+      const file = await files.findOne({ _id: new ObjectId(parentId), userId: ObjectId(user._id) });
       if (!file) {
         return res.status(404).json({ error: 'Parent not found' });
       }
