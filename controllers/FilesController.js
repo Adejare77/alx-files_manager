@@ -58,7 +58,7 @@ class FilesController {
     if (parentId) {
       const file = await files.findOne({ _id: new ObjectId(parentId) });
       if (!file) {
-        return res.status(404).json({ error: 'Parent not found' });
+        return res.status(400).json({ error: 'Parent not found' });
       }
       if (file.type !== 'folder') {
         return res.status(400).json({ error: 'Parent is not a folder' });
@@ -150,10 +150,12 @@ class FilesController {
 
     const pageNumber = page ? parseInt(page, 10) : 0;
     const startIndex = pageNumber * 20;
-    const matchCriterial = { userId: user._id };
+
+    const matchCriterial = { userId: ObjectId(user._id) };
     if (parentId) {
-      matchCriterial.parentId = parentId;
+      matchCriterial.parentId = ObjectId(parentId);
     }
+
     const aggregatedFiles = await filesCollection.aggregate([
       { $match: matchCriterial },
       { $skip: startIndex },
@@ -213,9 +215,11 @@ class FilesController {
     }
     const token = req.header('x-token');
     const user = await FilesController.tokenForUser(token);
+
     if (!file.isPublic && !(user && user._id.toString() === file.userId.toString())) {
       return res.status(404).json({ error: 'Not found' });
     }
+
     if (file.type === 'folder') {
       return res.status(400).json({ error: "A folder doesn't have content" });
     }
@@ -231,7 +235,11 @@ class FilesController {
         fileName = `${fileName}_${size}`;
       }
 
-      const mimeType = mime.contentType(file.name);
+      // mime-types uses file extension names e.g(txt, pdf, png, docx, jpeg ...)
+      const fileExtension = file.name.split('.') > 1 ? file.name.split('.')[1] : file.name;
+      // if the file has no extension given, then mime.lookup returns false.
+      // 'application/octet-stream' should be used as default instead
+      const mimeType = mime.lookup(fileExtension) || 'application/octet-stream';
       const fileContent = fs.readFileSync(fileName, 'utf8');
       res.set('Content-Type', mimeType);
       return res.status(200).send(fileContent);
